@@ -1220,6 +1220,29 @@ handle_eval_breaker:
 
         TARGET(STORE_FAST) {
             PyObject *value = POP();
+            {
+                //#
+							  PyObject *target = GETLOCAL(oparg);
+								if (target && target->ob_ann_type != NULL && value->ob_ann_type != NULL){
+                    PyTypeObject *target_ann_type = target->ob_ann_type;
+                    PyTypeObject *value_ann_type = value->ob_ann_type;
+                    if (target_ann_type != value_ann_type) {
+                        printf("Warning: ");
+        if (PyObject_Print(target_ann_type, stdout, 0) != 0) {
+            PyErr_Clear();
+            printf("<%s object at %p>",
+                   Py_TYPE(target_ann_type)->tp_name, (void *)(target_ann_type));
+        }
+                        printf(" != ");
+        if (PyObject_Print(value_ann_type, stdout, 0) != 0) {
+            PyErr_Clear();
+            printf("<%s object at %p>",
+                   Py_TYPE(value_ann_type)->tp_name, (void *)(value_ann_type));
+        }
+                        printf("\n");
+                    }
+                }
+            }
             SETLOCAL(oparg, value);
             DISPATCH();
         }
@@ -2779,6 +2802,17 @@ handle_eval_breaker:
             PUSH(map);
             DISPATCH();
         }
+
+				TARGET(ANNOTATE) {
+            PyObject *type = TOP();
+            PyObject *name = SECOND();
+						Py_SET_ANN_TYPE(name, type);
+            if (_PyType_HasFeature(type, Py_TPFLAGS_HEAPTYPE)) {
+                Py_INCREF(type);
+            }
+            STACK_SHRINK(2);
+            DISPATCH();
+				}
 
         TARGET(SETUP_ANNOTATIONS) {
             int err;

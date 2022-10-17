@@ -216,6 +216,7 @@ def_op('CALL', 171)
 def_op('KW_NAMES', 172)
 hasconst.append(172)
 
+def_op('ANNOTATE', 181)
 
 hasarg.extend([op for op in opmap.values() if op >= HAVE_ARGUMENT])
 

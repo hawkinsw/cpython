@@ -54,6 +54,7 @@ const uint8_t _PyOpcode_Caches[256] = {
 };
 
 const uint8_t _PyOpcode_Deopt[256] = {
+    [ANNOTATE] = ANNOTATE,
     [ASYNC_GEN_WRAP] = ASYNC_GEN_WRAP,
     [BEFORE_ASYNC_WITH] = BEFORE_ASYNC_WITH,
     [BEFORE_WITH] = BEFORE_WITH,
@@ -421,7 +422,7 @@ static const char *const _PyOpcode_OpName[263] = {
     [UNPACK_SEQUENCE_LIST] = "UNPACK_SEQUENCE_LIST",
     [UNPACK_SEQUENCE_TUPLE] = "UNPACK_SEQUENCE_TUPLE",
     [UNPACK_SEQUENCE_TWO_TUPLE] = "UNPACK_SEQUENCE_TWO_TUPLE",
-    [181] = "<181>",
+    [ANNOTATE] = "ANNOTATE",
     [182] = "<182>",
     [183] = "<183>",
     [184] = "<184>",
@@ -507,7 +508,6 @@ static const char *const _PyOpcode_OpName[263] = {
 #endif
 
 #define EXTRA_CASES \
-    case 181: \
     case 182: \
     case 183: \
     case 184: \

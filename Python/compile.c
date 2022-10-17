@@ -1131,6 +1131,9 @@ stack_effect(int opcode, int oparg, int jump)
         case IMPORT_FROM:
             return 1;
 
+        case ANNOTATE:
+            return -2;
+
         /* Jumps */
         case JUMP_FORWARD:
         case JUMP_BACKWARD:
@@ -6017,6 +6020,22 @@ compiler_annassign(struct compiler *c, stmt_ty s)
             mangled = _Py_Mangle(c->u->u_private, targ->v.Name.id);
             ADDOP_LOAD_CONST_NEW(c, mangled);
             ADDOP(c, STORE_SUBSCR);
+
+            if (s->v.AnnAssign.value) {
+                ADDOP_NAME(c, LOAD_NAME, targ->v.Name.id, names);
+                if (c->c_future->ff_features & CO_FUTURE_ANNOTATIONS) {
+                    VISIT(c, annexpr, s->v.AnnAssign.annotation)
+                }
+                else {
+                    VISIT(c, expr, s->v.AnnAssign.annotation);
+                }
+								// This does not do what we think it does. However,
+								// because we are only able to add an opcode in a 
+								// place where there are operands required, we have to
+								// add something. So, we will do that here and then
+								// we will come back and figure it out.
+                ADDOP_I(c, ANNOTATE, 0);
+            }
         }
         break;
     case Attribute_kind:

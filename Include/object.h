@@ -103,6 +103,7 @@ struct _object {
     _PyObject_HEAD_EXTRA
     Py_ssize_t ob_refcnt;
     PyTypeObject *ob_type;
+    PyTypeObject *ob_ann_type;
 };
 
 /* Cast argument to PyObject* type. */
@@ -167,6 +168,11 @@ static inline void Py_SET_REFCNT(PyObject *ob, Py_ssize_t refcnt) {
 static inline void Py_SET_TYPE(PyObject *ob, PyTypeObject *type) {
     ob->ob_type = type;
 }
+
+static inline void Py_SET_ANN_TYPE(PyObject *ob, PyTypeObject *type) {
+    ob->ob_ann_type = type;
+}
+
 #if !defined(Py_LIMITED_API) || Py_LIMITED_API+0 < 0x030b0000
 #  define Py_SET_TYPE(ob, type) Py_SET_TYPE(_PyObject_CAST(ob), type)
 #endif
