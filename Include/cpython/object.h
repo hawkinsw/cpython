@@ -270,6 +270,7 @@ PyAPI_FUNC(PyObject *) _PyType_GetTextSignatureFromInternalDoc(const char *, con
 PyAPI_FUNC(PyObject *) PyType_GetModuleByDef(PyTypeObject *, PyModuleDef *);
 
 PyAPI_FUNC(int) PyObject_Print(PyObject *, FILE *, int);
+PyAPI_FUNC(void) PyObject_PrintAnnTypeWarning(PyTypeObject *, PyTypeObject *, FILE *);
 PyAPI_FUNC(void) _Py_BreakPoint(void);
 PyAPI_FUNC(void) _PyObject_Dump(PyObject *);
 PyAPI_FUNC(int) _PyObject_IsFreed(PyObject *);

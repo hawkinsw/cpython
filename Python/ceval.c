@@ -1221,25 +1221,15 @@ handle_eval_breaker:
         TARGET(STORE_FAST) {
             PyObject *value = POP();
             {
-                //#
-							  PyObject *target = GETLOCAL(oparg);
-								if (target && target->ob_ann_type != NULL && value->ob_ann_type != NULL){
+                PyObject *target = GETLOCAL(oparg);
+                if (target && target->ob_ann_type != NULL &&
+                    value->ob_ann_type != NULL) {
                     PyTypeObject *target_ann_type = target->ob_ann_type;
                     PyTypeObject *value_ann_type = value->ob_ann_type;
                     if (target_ann_type != value_ann_type) {
-                        printf("Warning: ");
-        if (PyObject_Print(target_ann_type, stdout, 0) != 0) {
-            PyErr_Clear();
-            printf("<%s object at %p>",
-                   Py_TYPE(target_ann_type)->tp_name, (void *)(target_ann_type));
-        }
-                        printf(" != ");
-        if (PyObject_Print(value_ann_type, stdout, 0) != 0) {
-            PyErr_Clear();
-            printf("<%s object at %p>",
-                   Py_TYPE(value_ann_type)->tp_name, (void *)(value_ann_type));
-        }
-                        printf("\n");
+                        PyObject_PrintAnnTypeWarning(target_ann_type,
+                                                     value_ann_type,
+                                                     stdout);
                     }
                 }
             }
@@ -2354,6 +2344,22 @@ handle_eval_breaker:
             PyObject *name = GETITEM(names, oparg);
             PyObject *owner = TOP();
             PyObject *v = SECOND();
+
+            if (PyObject_HasAttr(owner, name)) {
+                PyObject *old = PyObject_GetAttr(owner, name);
+                if (old != NULL && v != NULL) {
+                    if (old->ob_ann_type != NULL &&
+                        v->ob_ann_type != NULL) {
+                        PyTypeObject *target_ann_type = old->ob_ann_type;
+                        PyTypeObject *value_ann_type = v->ob_ann_type;
+                        if (target_ann_type != value_ann_type) {
+                            PyObject_PrintAnnTypeWarning(target_ann_type,
+                                                         value_ann_type,
+                                                         stdout);
+                        }
+                    }
+                }
+            }
             int err;
             STACK_SHRINK(2);
             err = PyObject_SetAttr(owner, name, v);

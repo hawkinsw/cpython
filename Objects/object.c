@@ -30,6 +30,23 @@ extern "C" {
 extern void _PyMem_DumpTraceback(int fd, const void *ptr);
 
 
+void PyObject_PrintAnnTypeWarning(PyTypeObject *target, PyTypeObject *value, FILE *f) {
+    fprintf(f, "Warning: ");
+    if (PyObject_Print(target, f, 0) != 0) {
+        PyErr_Clear();
+        fprintf(f, "<%s object at %p>",
+               Py_TYPE(target)->tp_name, (void *)(target));
+    }
+    fprintf(f, " != ");
+    if (PyObject_Print(value, f, 0) != 0) {
+        PyErr_Clear();
+        fprintf(f, "<%s object at %p>",
+               Py_TYPE(value)->tp_name, (void *)(value));
+    }
+    fprintf(f, "\n");
+}
+
+
 int
 _PyObject_CheckConsistency(PyObject *op, int check_content)
 {
