@@ -34,6 +34,10 @@
 #include "setobject.h"
 #include "structmember.h"         // struct PyMemberDef, T_OFFSET_EX
 
+#ifdef Py_REFCNTD
+#include "internal/pycore_opcode.h"
+#endif
+
 #include <ctype.h>
 #include <stdbool.h>
 
@@ -691,6 +695,11 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
 #define PRE_DISPATCH_GOTO() ((void)0)
 #endif
 
+#ifdef Py_REFCNTD
+#define LOG_OPCODE() {printf("Dispatch to %s \n", _PyOpcode_OpName[opcode]);}
+#else
+#define LOG_OPCODE() {};
+#endif
 
 /* Do interpreter dispatch accounting for tracing and instrumentation */
 #define DISPATCH() \
@@ -699,6 +708,7 @@ PyEval_EvalFrameEx(PyFrameObject *f, int throwflag)
         PRE_DISPATCH_GOTO(); \
         assert(cframe.use_tracing == 0 || cframe.use_tracing == 255); \
         opcode |= cframe.use_tracing OR_DTRACE_LINE; \
+        LOG_OPCODE(); \
         DISPATCH_GOTO(); \
     }
 

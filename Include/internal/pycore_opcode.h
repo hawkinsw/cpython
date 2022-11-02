@@ -237,7 +237,7 @@ const uint8_t _PyOpcode_Deopt[256] = {
 };
 #endif   // NEED_OPCODE_TABLES
 
-#ifdef Py_DEBUG
+#if defined(Py_DEBUG) || defined(Py_REFCNTD)
 static const char *const _PyOpcode_OpName[263] = {
     [CACHE] = "CACHE",
     [POP_TOP] = "POP_TOP",

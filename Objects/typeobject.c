@@ -1347,6 +1347,9 @@ PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
     }
 
     if (_PyType_IS_GC(type)) {
+#ifdef Py_REFCNTD
+        printf("GenericAlloc a type (%s) with GC support.\n", type->tp_name);
+#endif //Py_REFCNTD
         _PyObject_GC_TRACK(obj);
     }
     return obj;

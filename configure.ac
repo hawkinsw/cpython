@@ -1668,6 +1668,21 @@ else AC_MSG_RESULT(no); Py_DEBUG='false'
 fi],
 [AC_MSG_RESULT(no)])
 
+# Check for --with-refcnt-demo
+AC_MSG_CHECKING(for --with-refcnt-demo)
+AC_ARG_WITH(refcnt-demo,
+            AS_HELP_STRING([--with-refcnt-demo], [build with PyREFCNTD defined (default is no)]),
+[
+if test "$withval" != no
+then
+  AC_DEFINE(Py_REFCNTD, 1,
+  [Define if you want to build an interpreter with support for the ref counting demo.])
+  AC_MSG_RESULT(yes);
+  Py_REFCNTD='true'
+else AC_MSG_RESULT(no); Py_DEBUG='false'
+fi],
+[AC_MSG_RESULT(no)])
+
 # Check for --with-trace-refs
 # --with-trace-refs
 AC_MSG_CHECKING(for --with-trace-refs)
