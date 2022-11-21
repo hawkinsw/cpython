@@ -33,6 +33,8 @@ module Python
           | AsyncFor(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)
           | While(expr test, stmt* body, stmt* orelse)
           | If(expr test, stmt* body, stmt* orelse)
+          | GuardedDo(guarded_cmd* gcmds)
+          | GuardedIf(guarded_cmd* gcmds)
           | With(withitem* items, stmt* body, string? type_comment)
           | AsyncWith(withitem* items, stmt* body, string? type_comment)
 
@@ -124,6 +126,8 @@ module Python
              attributes (int lineno, int col_offset, int? end_lineno, int? end_col_offset)
 
     withitem = (expr context_expr, expr? optional_vars)
+
+    guarded_cmd = (expr test, stmt* body)
 
     match_case = (pattern pattern, expr? guard, stmt* body)
 
