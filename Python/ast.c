@@ -790,6 +790,25 @@ validate_stmt(struct validator *state, stmt_ty stmt)
         }
         ret = validate_body(state, stmt->v.AsyncWith.body, "AsyncWith");
         break;
+    case GuardedDo_kind:
+    case GuardedIf_kind: {
+        asdl_guarded_cmd_seq *gcmds = (stmt->kind == GuardedDo_kind) ?
+            stmt->v.GuardedDo.gcmds :
+            stmt->v.GuardedIf.gcmds;
+        const char *where = (stmt->kind == GuardedDo_kind) ? "GuardedDo" : "GuardedIf";
+        if (!validate_nonempty_seq(gcmds, "gcmds", where)) {
+            return 0;
+        }
+        for (i = 0; i < asdl_seq_LEN(gcmds); i++) {
+            guarded_cmd_ty gcmd = asdl_seq_GET(gcmds, i);
+            if (!validate_expr(state, gcmd->test, Load)
+                || !validate_body(state, gcmd->body, where)) {
+                return 0;
+            }
+        }
+        ret = 1;
+        break;
+    }
     case Match_kind:
         if (!validate_expr(state, stmt->v.Match.subject, Load)
             || !validate_nonempty_seq(stmt->v.Match.cases, "cases", "Match")) {

@@ -3191,6 +3191,72 @@ compiler_async_for(struct compiler *c, stmt_ty s)
 }
 
 static int
+compiler_gif(struct compiler *c, stmt_ty s)
+{
+    NEW_JUMP_TARGET_LABEL(c, gif_success);
+
+    for (Py_ssize_t i = 0; i < asdl_seq_LEN(s->v.GuardedIf.gcmds); i++) {
+        NEW_JUMP_TARGET_LABEL(c, next);
+        guarded_cmd_ty gcmd = asdl_seq_GET(s->v.GuardedIf.gcmds, i);
+        // For each alternative, if the test is false, jump over the
+        // code that executes this alternative's body.
+        if (!compiler_jump_if(c, LOC(s), gcmd->test, next, 0)) {
+            return 0;
+        }
+
+        // This alternate hit, so execute its body!
+        VISIT_SEQ(c, stmt, gcmd->body);
+        // Now, quit!
+        ADDOP_JUMP(c, LOC(s), JUMP, gif_success);
+
+        // Otherwise, keep going to the next alt.
+        USE_LABEL(c, next);
+    }
+
+    // If we are here, we know that none of the alts succeeded!
+    _Py_DECLARE_STR(no_true_guard, "No true guard in any guarded command of guarded if.");
+    ADDOP(c, LOC(s), PUSH_NULL);
+    ADDOP_LOAD_CONST(c, LOC(s), PyExc_RuntimeError);
+    ADDOP_LOAD_CONST_NEW(c, LOC(s), Py_NewRef(&_Py_STR(no_true_guard)));
+    ADDOP_I(c, LOC(s), CALL, 1);
+    ADDOP_I(c, LOC(s), RAISE_VARARGS, 1);
+
+    // When we get here, we just fall on through!
+    USE_LABEL(c, gif_success);
+    return 1;
+}
+
+
+static int
+compiler_gdo(struct compiler *c, stmt_ty s)
+{
+    NEW_JUMP_TARGET_LABEL(c, gdo_start);
+
+    USE_LABEL(c, gdo_start);
+
+    for (Py_ssize_t i = 0; i < asdl_seq_LEN(s->v.GuardedDo.gcmds); i++) {
+        NEW_JUMP_TARGET_LABEL(c, next);
+
+        guarded_cmd_ty gcmd = asdl_seq_GET(s->v.GuardedDo.gcmds, i);
+        // For each alternative, if the test is false, continue.
+        if (!compiler_jump_if(c, LOC(s), gcmd->test, next, 0)) {
+            return 0;
+        }
+
+        // This alternate hit, so execute its body!
+        VISIT_SEQ(c, stmt, gcmd->body);
+        // Now, restart the loop!
+        ADDOP_JUMP(c, LOC(s), JUMP, gdo_start);
+
+        // Otherwise, keep going to the next alt.
+        USE_LABEL(c, next);
+    }
+
+    // When we get here, we just fall on through!
+    return 1;
+}
+
+static int
 compiler_while(struct compiler *c, stmt_ty s)
 {
     NEW_JUMP_TARGET_LABEL(c, loop);
@@ -4064,6 +4130,10 @@ compiler_visit_stmt(struct compiler *c, stmt_ty s)
         return compiler_while(c, s);
     case If_kind:
         return compiler_if(c, s);
+    case GuardedDo_kind:
+        return compiler_gdo(c, s);
+    case GuardedIf_kind:
+        return compiler_gif(c, s);
     case Match_kind:
         return compiler_match(c, s);
     case Raise_kind:

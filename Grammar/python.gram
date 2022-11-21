@@ -128,6 +128,8 @@ simple_stmt[stmt_ty] (memo):
 compound_stmt[stmt_ty]:
     | &('def' | '@' | ASYNC) function_def
     | &'if' if_stmt
+    | &'gdo' guarded_do_stmt
+    | &'gif' guarded_if_stmt
     | &('class' | '@') class_def
     | &('with' | ASYNC) with_stmt
     | &('for' | ASYNC) for_stmt
@@ -369,6 +371,25 @@ elif_stmt[stmt_ty]:
 else_block[asdl_stmt_seq*]:
     | invalid_else_stmt
     | 'else' &&':' b=block { b }
+
+# GuardedCmd statement
+# ------------
+
+guarded_cmd[guarded_cmd_ty]:
+    | "gcmd" a=named_expression ':' b=block {
+        _PyAST_guarded_cmd(a, b, p->arena) }
+
+# GuardedDo statement
+#
+guarded_do_stmt[stmt_ty]:
+    | 'gdo' ':' NEWLINE INDENT a[asdl_guarded_cmd_seq*]=guarded_cmd+ DEDENT {
+        _PyAST_GuardedDo(a, EXTRA) }
+
+# GuardedIf statement
+#
+guarded_if_stmt[stmt_ty]:
+    | 'gif' ':' NEWLINE INDENT a[asdl_guarded_cmd_seq*]=guarded_cmd+ DEDENT {
+        _PyAST_GuardedIf(a, EXTRA) }
 
 # While statement
 # ---------------

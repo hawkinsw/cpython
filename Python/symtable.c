@@ -1303,6 +1303,18 @@ symtable_visit_stmt(struct symtable *st, stmt_ty s)
         if (s->v.While.orelse)
             VISIT_SEQ(st, stmt, s->v.While.orelse);
         break;
+    case GuardedDo_kind:
+    case GuardedIf_kind: {
+        int i;
+        asdl_guarded_cmd_seq *gcmds = (s->kind == GuardedDo_kind) ? 
+            s->v.GuardedDo.gcmds : s->v.GuardedIf.gcmds;
+        for (i = 0; i < asdl_seq_LEN(gcmds); i++) {
+            guarded_cmd_ty gcmd = asdl_seq_GET(gcmds, i);
+            VISIT(st, expr, gcmd->test);
+            VISIT_SEQ(st, stmt, gcmd->body);
+        }
+        break;
+    }
     case If_kind:
         /* XXX if 0: and lookup_yield() hacks */
         VISIT(st, expr, s->v.If.test);
